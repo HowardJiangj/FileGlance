@@ -14,4 +14,4 @@ FileGlance 是一个 macOS 菜单栏工具。在访达或桌面上，把鼠标�
 
 ## 从源码构建
 
-在装有 Xcode 命令行工具和较新 macOS SDK 的 Mac 上运行 `./build.sh`。应用输出到 `build/FileGlance.app`。
+在装有 Xcode 命令行工具和较新 macOS SDK 的 Mac 上运行 `bash build.sh`。应用输出到 `build/FileGlance.app`。
