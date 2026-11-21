@@ -5,14 +5,63 @@
 #import <sys/stat.h>
 #import <unistd.h>
 
+// Avoid depending on a thumbnail provider or opening the file to describe it.
+static NSString *fileKind(NSURL *url, BOOL package, BOOL link) {
+    if (link) return @"Symbolic link";
+    NSString *ext = url.pathExtension.lowercaseString;
+    NSString *type = nil;
+    [url getResourceValue:&type forKey:NSURLTypeIdentifierKey error:nil];
+    if (!type && ext.length) {
+        type = CFBridgingRelease(UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
+            (__bridge CFStringRef)ext, NULL));
+    }
+    if (package) return [ext isEqual:@"app"] ? @"macOS application" : @"File package";
+    if ([ext isEqual:@"pdf"]) return @"PDF document";
+    NSString *category = nil;
+    if (type) {
+        CFStringRef uti = (__bridge CFStringRef)type;
+        if (UTTypeConformsTo(uti, kUTTypeImage)) category = @"image";
+        else if (UTTypeConformsTo(uti, kUTTypeAudio)) category = @"audio";
+        else if (UTTypeConformsTo(uti, kUTTypeMovie)) category = @"video";
+        else if (UTTypeConformsTo(uti, kUTTypeArchive)) category = @"archive";
+        else if (UTTypeConformsTo(uti, kUTTypeSpreadsheet)) category = @"spreadsheet";
+        else if (UTTypeConformsTo(uti, kUTTypePresentation)) category = @"presentation";
+        else if (UTTypeConformsTo(uti, kUTTypeSourceCode)) category = @"source code";
+        else if (UTTypeConformsTo(uti, kUTTypeText)) category = @"text document";
+    }
+    if (!category) {
+        // Office types and other app-defined formats may only conform to public.data.
+        static NSDictionary<NSString *, NSString *> *kinds;
+        static dispatch_once_t once;
+        dispatch_once(&once, ^{
+            kinds = @{@"docx": @"Word document", @"doc": @"Word document",
+                      @"xlsx": @"spreadsheet", @"xls": @"spreadsheet", @"csv": @"table",
+                      @"pptx": @"presentation", @"ppt": @"presentation",
+                      @"zip": @"archive", @"7z": @"archive", @"rar": @"archive",
+                      @"gz": @"archive", @"tar": @"archive", @"dmg": @"disk image",
+                      @"png": @"image", @"jpg": @"image", @"jpeg": @"image", @"heic": @"image",
+                      @"mp3": @"audio", @"wav": @"audio", @"m4a": @"audio",
+                      @"mp4": @"video", @"mov": @"video", @"mkv": @"video",
+                      @"txt": @"text document", @"md": @"Markdown document",
+                      @"json": @"data file", @"psd": @"Photoshop document",
+                      @"ai": @"Illustrator document"};
+        });
+        category = kinds[ext];
+    }
+    if (ext.length) return [NSString stringWithFormat:@"%@ %@", ext.uppercaseString, category ?: @"file"];
+    return category.capitalizedString ?: @"File without an extension";
+}
+
 @implementation FilePreview
 + (instancetype)readInfo:(NSURL *)url {
     if (!url.isFileURL) return nil;
     struct stat info;
-    if (lstat(url.fileSystemRepresentation, &info) != 0 ||
-        !(S_ISREG(info.st_mode) || S_ISLNK(info.st_mode))) return nil;
+    if (lstat(url.fileSystemRepresentation, &info) != 0) return nil;
+    BOOL package = S_ISDIR(info.st_mode) && [NSWorkspace.sharedWorkspace isFilePackageAtPath:url.path];
+    if (!S_ISREG(info.st_mode) && !S_ISLNK(info.st_mode) && !package) return nil;
     FilePreview *file = [self new];
     file.url = url;
+    file.kindText = fileKind(url, package, S_ISLNK(info.st_mode));
     NSByteCountFormatter *formatter = [NSByteCountFormatter new];
     formatter.countStyle = NSByteCountFormatterCountStyleFile;
     formatter.allowsNonnumericFormatting = NO;
@@ -25,6 +74,7 @@
     formatter.allowedUnits = 1UL << unit;
     file.sizeText = [NSString stringWithFormat:@"%@ %@", [formatter stringFromByteCount:info.st_size],
                      info.st_size == 1 ? @"byte" : units[unit]];
+    if (package) file.sizeText = @""; // Directory entry size is not the size of its contents.
     file.modified = [NSDate dateWithTimeIntervalSince1970:info.st_mtimespec.tv_sec + info.st_mtimespec.tv_nsec / 1e9];
     NSString *download = nil;
     [url getResourceValue:&download forKey:NSURLUbiquitousItemDownloadingStatusKey error:nil];

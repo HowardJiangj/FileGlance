@@ -4,7 +4,8 @@
 @interface HoverCard ()
 @property (strong) NSPanel *panel;
 @property (strong) NSImageView *image;
-@property (strong) NSTextField *excerpt, *name, *size;
+@property (strong) NSTextField *excerpt, *name, *size, *modifiedLabel;
+@property (strong) NSDateFormatter *dateFormatter;
 @property (strong) FilePreview *current;
 @property (strong) QLThumbnailGenerationRequest *request;
 @property (strong) NSOperationQueue *worker;
@@ -62,7 +63,16 @@
     self.size.frame = NSMakeRect(14,9,260,17);
     self.size.textColor = NSColor.secondaryLabelColor;
     self.size.font = [NSFont systemFontOfSize:12];
+    self.size.lineBreakMode = NSLineBreakByTruncatingMiddle;
     [base addSubview:self.size];
+    self.modifiedLabel = [NSTextField labelWithString:@""];
+    self.modifiedLabel.frame = NSMakeRect(14,9,260,17);
+    self.modifiedLabel.textColor = NSColor.secondaryLabelColor;
+    self.modifiedLabel.font = [NSFont systemFontOfSize:12];
+    [base addSubview:self.modifiedLabel];
+    self.dateFormatter = [NSDateFormatter new];
+    self.dateFormatter.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    self.dateFormatter.dateFormat = @"MMM d, yyyy 'at' HH:mm";
     return self;
 }
 
@@ -76,15 +86,18 @@
 
 - (void)showFile:(FilePreview *)file nearPoint:(NSPoint)point {
     if ([self.current.url isEqual:file.url] && [self.current.modified isEqual:file.modified] &&
-        [self.current.sizeText isEqual:file.sizeText] && self.current.localContent == file.localContent) return;
+        [self.current.sizeText isEqual:file.sizeText] && [self.current.kindText isEqual:file.kindText] && self.current.localContent == file.localContent) return;
     [self hide];
     self.current = file;
     self.name.stringValue = file.url.lastPathComponent;
     CGFloat nameHeight = ceil([self.name.cell cellSizeForBounds:NSMakeRect(0,0,260,4096)].height);
     nameHeight = MAX(18, nameHeight);
-    [self.panel setContentSize:NSMakeSize(288,187 + nameHeight)];
-    self.name.frame = NSMakeRect(14,28,260,nameHeight);
-    self.size.stringValue = file.sizeText;
+    [self.panel setContentSize:NSMakeSize(288,206 + nameHeight)];
+    self.name.frame = NSMakeRect(14,47,260,nameHeight);
+    self.size.frame = NSMakeRect(14,28,260,17);
+    self.size.stringValue = file.sizeText.length
+        ? [NSString stringWithFormat:@"%@ · %@", file.kindText, file.sizeText] : file.kindText;
+    self.modifiedLabel.stringValue = [@"Modified " stringByAppendingString:[self.dateFormatter stringFromDate:file.modified]];
     self.excerpt.hidden = YES;
     self.excerpt.stringValue = @"";
     self.image.hidden = NO;
