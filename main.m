@@ -41,6 +41,7 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
     self.timer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(tick:)
         userInfo:nil repeats:YES];
     self.timer.tolerance = 0.02;
+    [[NSRunLoop mainRunLoop] addTimer:self.timer forMode:NSRunLoopCommonModes];
     [NSWorkspace.sharedWorkspace.notificationCenter addObserver:self selector:@selector(workspaceChanged:)
         name:NSWorkspaceActiveSpaceDidChangeNotification object:nil];
     [NSWorkspace.sharedWorkspace.notificationCenter addObserver:self selector:@selector(workspaceChanged:)
@@ -92,7 +93,7 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
     }
     if (self.paused || self.menuOpen || !self.trusted) return;
     NSPoint point = NSEvent.mouseLocation;
-    if (!NSEqualPoints(point, self.anchor) || NSEvent.pressedMouseButtons != 0) {
+    if (hypot(point.x-self.anchor.x, point.y-self.anchor.y) > 3 || NSEvent.pressedMouseButtons != 0) {
         [self resetHover];
         return;
     }
@@ -107,7 +108,7 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
         FilePreview *file = url ? [FilePreview readInfo:url] : nil;
         dispatch_async(dispatch_get_main_queue(), ^{
             self.querying = NO;
-            if (generation != self.generation || !NSEqualPoints(point, NSEvent.mouseLocation) || NSEvent.pressedMouseButtons) return;
+            if (generation != self.generation || hypot(point.x-NSEvent.mouseLocation.x, point.y-NSEvent.mouseLocation.y) > 3 || NSEvent.pressedMouseButtons) return;
             if (file) [self.card showFile:file nearPoint:point];
             else [self.card hide];
         });

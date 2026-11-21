@@ -7,12 +7,48 @@ static id attribute(id element, CFStringRef key) {
     return CFBridgingRelease(result);
 }
 
-static NSURL *itemURL(id node) {
-    id value = attribute(node, kAXURLAttribute);
-    if ([value isKindOfClass:NSString.class]) value = [NSURL URLWithString:value];
+static NSURL *fileURL(id value) {
+    if ([value isKindOfClass:NSString.class]) {
+        value = [value hasPrefix:@"/"] ? [NSURL fileURLWithPath:value] : [NSURL URLWithString:value];
+    }
     if (![value isKindOfClass:NSURL.class] || ![value isFileURL]) return nil;
     NSURL *url = value;
     return url.isFileReferenceURL ? url.filePathURL : url;
+}
+
+static NSURL *itemURL(id node) {
+    return fileURL(attribute(node, kAXURLAttribute));
+}
+
+// Some icon views expose a filename or display title without an AXURL.
+static NSURL *iconFile(id icon) {
+    id window = attribute(icon, kAXWindowAttribute);
+    NSURL *folder = window ? fileURL(attribute(window, kAXDocumentAttribute)) : nil;
+    if (!window) {
+        folder = [NSFileManager.defaultManager URLsForDirectory:NSDesktopDirectory
+                                                      inDomains:NSUserDomainMask].firstObject;
+    }
+    if (!folder) return nil;
+    for (NSString *key in @[@"AXFilename", @"AXTitle", @"AXDescription"]) {
+        NSString *name = attribute(icon, (__bridge CFStringRef)key);
+        if (![name isKindOfClass:NSString.class] || !name.length ||
+            ![name isEqual:name.lastPathComponent] || [name isEqual:@"."] || [name isEqual:@".."]) continue;
+        NSURL *candidate = [folder URLByAppendingPathComponent:name];
+        if ([candidate checkResourceIsReachableAndReturnError:nil]) return candidate;
+        // Finder can omit the extension in its displayed title.
+        NSArray *files = [NSFileManager.defaultManager contentsOfDirectoryAtURL:folder
+            includingPropertiesForKeys:@[NSURLLocalizedNameKey] options:NSDirectoryEnumerationSkipsHiddenFiles error:nil];
+        NSURL *match = nil;
+        for (NSURL *file in files) {
+            NSString *display = nil;
+            [file getResourceValue:&display forKey:NSURLLocalizedNameKey error:nil];
+            if (![display isEqual:name] && ![file.lastPathComponent.stringByDeletingPathExtension isEqual:name]) continue;
+            if (match) return nil;
+            match = file;
+        }
+        if (match) return match;
+    }
+    return nil;
 }
 
 // Finder's list view may put the URL on the name cell's child, even if
@@ -44,6 +80,7 @@ NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID) {
     id node = CFBridgingRelease(hit);
     if (owner != finderPID) return nil;
 
+    id icon = nil;
     for (int level = 0; node && level < 12; level++) {
         NSString *role = attribute(node, kAXRoleAttribute);
         // Container URLs may describe the open folder or the window proxy.
@@ -57,7 +94,8 @@ NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID) {
             url = urlInRow(node, 3, &budget);
             if (url) return url;
         }
+        if (!icon && ([role isEqual:@"AXImage"] || [role isEqual:@"AXLayoutItem"])) icon = node;
         node = attribute(node, kAXParentAttribute);
     }
-    return nil;
+    return icon ? iconFile(icon) : nil;
 }
