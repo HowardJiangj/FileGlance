@@ -13,8 +13,18 @@
         !(S_ISREG(info.st_mode) || S_ISLNK(info.st_mode))) return nil;
     FilePreview *file = [self new];
     file.url = url;
-    file.sizeText = info.st_size == 0 ? @"0 字节" :
-        [NSByteCountFormatter stringFromByteCount:info.st_size countStyle:NSByteCountFormatterCountStyleFile];
+    NSByteCountFormatter *formatter = [NSByteCountFormatter new];
+    formatter.countStyle = NSByteCountFormatterCountStyleFile;
+    formatter.allowsNonnumericFormatting = NO;
+    formatter.includesUnit = NO;
+    // Use explicit English unit names even when macOS uses another language.
+    NSArray *units = @[@"bytes", @"KB", @"MB", @"GB", @"TB", @"PB", @"EB"];
+    NSUInteger unit = 0;
+    unsigned long long amount = info.st_size;
+    while (amount >= 1000 && unit + 1 < units.count) { amount /= 1000; unit++; }
+    formatter.allowedUnits = 1UL << unit;
+    file.sizeText = [NSString stringWithFormat:@"%@ %@", [formatter stringFromByteCount:info.st_size],
+                     info.st_size == 1 ? @"byte" : units[unit]];
     file.modified = [NSDate dateWithTimeIntervalSince1970:info.st_mtimespec.tv_sec + info.st_mtimespec.tv_nsec / 1e9];
     NSString *download = nil;
     [url getResourceValue:&download forKey:NSURLUbiquitousItemDownloadingStatusKey error:nil];
@@ -95,7 +105,7 @@
     ssize_t count = read(fd, buf, sizeof(buf));
     close(fd);
     if (count < 0) return nil;
-    if (!count) return @"（空文本）";
+    if (!count) return @"(Empty text)";
     const unsigned char *bytes = (const unsigned char *)buf;
     BOOL utf16 = count >= 2 && ((bytes[0] == 0xff && bytes[1] == 0xfe) ||
                                  (bytes[0] == 0xfe && bytes[1] == 0xff));

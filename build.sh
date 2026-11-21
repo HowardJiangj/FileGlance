@@ -6,7 +6,7 @@ mkdir -p "$dest"
 app="$dest/FileGlance.app"
 mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
 cp Info.plist "$app/Contents/Info.plist"
-cp AppIcon.icns "$app/Contents/Resources/"
+cp LICENSE AppIcon.icns "$app/Contents/Resources/"
 for arch in x86_64 arm64; do
     minimum=10.15
     if [[ "$arch" == arm64 ]]; then minimum=11.0; fi

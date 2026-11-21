@@ -24,17 +24,17 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
     NSImage *symbol = nil;
     if (@available(macOS 11, *)) symbol = [NSImage imageWithSystemSymbolName:@"eye" accessibilityDescription:@"FileGlance"];
     if (symbol) self.item.button.image = symbol;
-    else self.item.button.title = @"览";
-    self.item.button.toolTip = @"FileGlance · 文件悬停预览";
+    else self.item.button.title = @"FG";
+    self.item.button.toolTip = @"FileGlance · File Hover Preview";
     NSMenu *menu = [NSMenu new];
     menu.delegate = self;
     self.stateItem = [menu addItemWithTitle:@"FileGlance" action:nil keyEquivalent:@""];
     [menu addItem:NSMenuItem.separatorItem];
-    self.toggleItem = [menu addItemWithTitle:@"暂停悬停预览" action:@selector(toggle:) keyEquivalent:@""];
+    self.toggleItem = [menu addItemWithTitle:@"Pause Hover Previews" action:@selector(toggle:) keyEquivalent:@""];
     self.toggleItem.target = self;
-    [menu addItemWithTitle:@"辅助功能权限…" action:@selector(settings:) keyEquivalent:@""].target = self;
+    [menu addItemWithTitle:@"Accessibility Settings…" action:@selector(settings:) keyEquivalent:@""].target = self;
     [menu addItem:NSMenuItem.separatorItem];
-    [menu addItemWithTitle:@"退出FileGlance" action:@selector(terminate:) keyEquivalent:@"q"].target = NSApp;
+    [menu addItemWithTitle:@"Quit FileGlance" action:@selector(terminate:) keyEquivalent:@"q"].target = NSApp;
     self.item.menu = menu;
     self.trusted = AXIsProcessTrusted();
     [self updateStatus];
@@ -47,10 +47,10 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
         name:NSWorkspaceDidActivateApplicationNotification object:nil];
     if (!self.trusted) {
         NSAlert *alert = [NSAlert new];
-        alert.messageText = @"让FileGlance识别指针下的文件";
-        alert.informativeText = @"请在“辅助功能”中允许“FileGlance”。开启后，把鼠标停在访达或桌面的文件上约半秒，即可看到文件信息和预览。菜单栏的眼睛图标可暂停或退出FileGlance。";
-        [alert addButtonWithTitle:@"打开辅助功能设置"];
-        [alert addButtonWithTitle:@"稍后"];
+        alert.messageText = @"Allow FileGlance to identify files under the pointer";
+        alert.informativeText = @"Enable FileGlance in Accessibility settings. Then hover over a file in Finder or on the desktop for half a second to preview it. Use the menu bar icon to pause previews or quit.";
+        [alert addButtonWithTitle:@"Open Accessibility Settings"];
+        [alert addButtonWithTitle:@"Later"];
         [NSApp activateIgnoringOtherApps:YES];
         if ([alert runModal] == NSAlertFirstButtonReturn) [self settings:nil];
     }
@@ -62,8 +62,8 @@ extern NSURL *FinderFileAtPoint(CGPoint point, pid_t finderPID);
     [NSWorkspace.sharedWorkspace openURL:[NSURL URLWithString:@"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"]];
 }
 - (void)updateStatus {
-    self.stateItem.title = !self.trusted ? @"FileGlance · 等待辅助功能权限" : self.paused ? @"FileGlance · 已暂停" : @"FileGlance · 悬停预览已开启";
-    self.toggleItem.title = self.paused ? @"恢复悬停预览" : @"暂停悬停预览";
+    self.stateItem.title = !self.trusted ? @"FileGlance · Accessibility Access Needed" : self.paused ? @"FileGlance · Paused" : @"FileGlance · Hover Previews On";
+    self.toggleItem.title = self.paused ? @"Resume Hover Previews" : @"Pause Hover Previews";
 }
 - (void)resetHover {
     self.generation++;

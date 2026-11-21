@@ -1,17 +1,21 @@
-# FileGlance · Prototype
+# FileGlance Prototype
 
-FileGlance 是一个 macOS 菜单栏工具。在访达或桌面上，把鼠标停在文件上约半秒，即可查看文件名、大小和预览。图片、PDF 首页和纯文本有内置预览，其他类型使用系统缩略图或文件图标。
+Hover over a file in Finder or on the desktop for about half a second to see its name, size, and a preview. Images, the first page of a PDF, and plain text have built-in previews. Other formats use a Quick Look thumbnail or a file icon.
 
-## 安装
+## Install
 
-1. 从 GitHub Releases 下载 macOS ZIP，解压后把 `FileGlance.app` 拖入“应用程序”。
-2. 打开应用，按提示在“隐私与安全性 → 辅助功能”中允许 FileGlance。
-3. 在访达或桌面将鼠标停在一个文件上。菜单栏的眼睛图标可暂停或退出。
+1. Download the macOS app ZIP from [Releases](https://github.com/HowardJiangj/FileGlance/releases), unzip it, and move FileGlance.app to Applications.
+2. Open FileGlance and allow Accessibility access when prompted. This lets FileGlance identify the Finder item under the pointer.
+3. Hover over a file. Use the eye icon in the menu bar to pause previews or quit.
 
-原型采用临时签名，尚未经过 Apple 公证。首次打开时可能需要在“隐私与安全性”中选择“仍要打开”。[Apple 官方说明](https://support.apple.com/zh-cn/102445)
+The prototype is ad hoc signed and has not been notarized by Apple. For first-launch instructions, see [Apple Support](https://support.apple.com/en-us/102445).
 
-构建目标为 Intel Mac 上的 macOS 10.15 起、Apple 芯片 Mac 上的 macOS 11 起。已验证应用签名、文件元数据读取及图片、PDF、文本预览。访达里的实际悬停仍待桌面环境验证。
+## Compatibility and build
 
-## 从源码构建
+The universal binary targets macOS 10.15 or later on Intel and macOS 11 or later on Apple silicon. File metadata and image, PDF, and text preview generation have been tested. End-to-end Finder hover behavior still needs desktop testing.
 
-在装有 Xcode 命令行工具和较新 macOS SDK 的 Mac 上运行 `bash build.sh`。应用输出到 `build/FileGlance.app`。
+To build locally, install the Xcode Command Line Tools with a recent macOS SDK and run `bash build.sh` from the repository root. The application is written to `build/FileGlance.app`.
+
+## License
+
+Copyright © 2026 Haocheng Jiang. Authorized recipients may run the prototype for personal evaluation. See [LICENSE](LICENSE) for copying and redistribution terms.
