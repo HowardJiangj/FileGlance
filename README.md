@@ -23,4 +23,4 @@ See [CHANGELOG.md](CHANGELOG.md) for changes by version. For every update, recor
 
 ## License
 
-Copyright © 2026 Haocheng Jiang. Authorized recipients may run the beta for personal evaluation. See [LICENSE](LICENSE) for copying and redistribution terms.
+Copyright © 2026 Haocheng Jiang. All rights reserved. Official application builds are available for personal, noncommercial evaluation. GitHub’s terms govern viewing and forking this public repository. Additional rights to reuse, modify, or redistribute the source require written permission, subject to applicable law. See [LICENSE](LICENSE) for the full terms.

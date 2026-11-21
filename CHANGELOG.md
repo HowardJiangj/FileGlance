@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Clarified personal evaluation terms for official builds and how the license applies to source code in the public GitHub repository.
+
 ## 0.1.3-beta.2 — FileGlance Beta 2
 
 - Hover cards show the file type and last modified time alongside the name and size, even when a thumbnail is unavailable.

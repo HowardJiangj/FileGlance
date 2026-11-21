@@ -1,15 +1,40 @@
-FileGlance Prototype License
+FileGlance Evaluation License
 
 Copyright (c) 2026 Haocheng Jiang (HowardJiangj). All rights reserved.
 
-Recipients authorized by the copyright holder may install and run the supplied
-FileGlance application for personal evaluation. They may make the copies
-needed for that purpose.
+1. Scope
 
-Except as permitted above or by applicable law, copying, modifying,
-redistributing, sublicensing, selling, or publishing the source code, assets,
-documentation, or application requires the copyright holder's prior written
-permission. Retain this notice with every permitted copy.
+These terms cover the FileGlance source code, compiled application, documentation,
+and assets to the extent owned by the copyright holder. Third-party components
+and materials are governed by their respective licenses.
 
-The prototype is provided as is, without warranty, to the extent permitted
-by applicable law.
+2. Permission to evaluate
+
+Anyone who obtains an official FileGlance application build from the project's
+GitHub Releases or directly from the copyright holder may install and run it
+on Macs they own or are authorized to use, for personal, noncommercial
+evaluation. This permission is nonexclusive and nontransferable. It includes
+making copies reasonably necessary for installation and personal backup.
+Keep the copyright and license notices with those copies.
+
+3. Reserved rights
+
+Except for the permissions expressly granted here, permissions that apply
+under GitHub's Terms of Service, and rights under applicable law, all rights
+are reserved. Prior written permission from the copyright holder is required
+to copy, modify, redistribute, sublicense, sell, or publish the covered
+materials, or to use the application beyond the evaluation permission above.
+
+GitHub's Terms of Service govern viewing and forking the public repository
+through GitHub. Those platform permissions continue to apply. This license
+grants no additional rights to reuse, modify, or redistribute the source code.
+
+For additional permissions, contact the copyright holder through the
+HowardJiangj GitHub account.
+
+4. Warranty
+
+To the extent permitted by applicable law, FileGlance is provided "as is",
+without warranties, express or implied, including merchantability, fitness
+for a particular purpose, and noninfringement. Any rights or protections
+that cannot be waived under applicable law are preserved.
